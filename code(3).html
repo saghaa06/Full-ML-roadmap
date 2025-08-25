@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Project Roadmap - Interactive Pirate Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        
+        .pirate-font {
+            font-family: 'Pirata One', cursive;
+        }
+        
+        .map-container {
+            background: url('https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/37e8efc8-3657-4e2d-842f-9ad9c05de790.png') no-repeat center center;
+            background-size: cover;
+            border: 12px solid #8B4513;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-overlay {
+            background: rgba(139, 69, 19, 0.08);
+            backdrop-filter: blur(3px);
+        }
+        
+        .road-path {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 80px;
+            background: linear-gradient(90deg, #654321, #8B4513, #654321);
+            border: 4px solid #5D4037;
+            border-radius: 40px;
+            transform: translateY(-50%);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+        
+        .road-markings {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 20px,
+                #FFD700 20px,
+                #FFD700 40px
+            );
+            transform: translateY(-50%);
+        }
+        
+        .flag {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5));
+        }
+        
+        .flag:hover {
+            transform: translateY(-8px) scale(1.08);
+            filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7));
+        }
+        
+        .flag.active {
+            transform: translateY(-12px) scale(1.15);
+            z-index: 20;
+        }
+        
+        .content-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(55, 65, 81, 0.95), rgba(31, 41, 55, 0.95));
+            border: 2px solid #FFD700;
+        }
+        
+        .content-card.active {
+            max-height: 600px;
+            opacity: 1;
+            transform: translateY(5px);
+        }
+        
+        .compass {
+            animation: spin 30s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .sound-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .sound-toggle:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="text-gray-100">
+    <!-- Audio Elements -->
+    <audio id="flagClickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
+    <audio id="pageLoadSound" src="https://assets.mixkit.co/sfx/preview/mixkit-magic-sparkles-3001.mp3"></audio>
+    <audio id="contentOpenSound" src="https://assets.mixkit.co/sfx/preview/mixkit-page-turn-single-1382.mp3"></audio>
+    
+    <div class="min-h-screen py-8 px-4">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="pirate-font text-6xl md:text-8xl text-yellow-400 mb-4 transform hover:scale-105 transition-transform">
+                ML Treasure Map
+            </h1>
+            <p class="text-xl text-gray-300 max-w-4xl mx-auto mb-6">
+                Navigate the complete machine learning project lifecycle with this interactive pirate-themed roadmap
+            </p>
+            
+            <!-- Sound Toggle -->
+            <div class="flex items-center justify-center space-x-4">
+                <span class="text-gray-400">Sound:</span>
+                <button id="soundToggle" class="sound-toggle bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white">
+                    🔈 Enabled
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Map Container -->
+        <div class="map-container rounded-3xl mx-auto max-w-7xl">
+            <div class="map-overlay rounded-2xl p-8 min-h-[700px] relative">
+                <!-- Road Path -->
+                <div class="road-path">
+                    <div class="road-markings"></div>
+                </div>
+                
+                <!-- Compass -->
+                <div class="absolute top-6 right-6 compass">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/05106293-af61-4995-acc2-645c08d31497.png" 
+                         alt="Vintage brass compass with intricate details and glowing needle pointing northwest" 
+                         class="w-20 h-20 rounded-full border-4 border-yellow-400" />
+                </div>
+
+                <!-- Flags Container with Better Spacing -->
+                <div class="relative h-[600px]">
+                    <!-- Flag 1 - Data Understanding -->
+                    <div class="absolute top-1/2 left-[8%] transform -translate-y-1/2">
+                        <div class="flag group" onclick="toggleContent(1, 'flagClickSound')">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/5e470cf2-1fdb-48f1-9f59-bdc6db954790.png" 
+                                 alt="Red pirate flag with compass rose and treasure map symbols for Data Understanding step" 
+                                 class="w-20 h-28 mx-auto mb-3" />
+                            <span class="text-white text-sm font-semibold bg-black bg-opacity-60 px-3 py-2 rounded-lg">1. Data Discovery</span>
+                        </div>
+                    </div>
+
+                    <!-- Flag 2 - Data Preparation -->
+                    <div class="absolute top-1/2 left-[23%] transform -translate-y-1/2">
+                        <div class="flag group" onclick="toggleContent(2, 'flagClickSound')">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/fb36b7de-c574-4808-bdd0-46e45f82974f.png" 
+                                 alt="Blue pirate flag with anchor and rope detailing for Data Preparation step" 
+                                 class="w-20 h-28 mx-auto mb-3" />
+                            <span class="text-white text-sm font-semibold bg-black bg-opacity-60 px-3 py-2 rounded-lg">2. Data Prep</span>
+                        </div>
+                    </div>
+
+                    <!-- Flag 3 - Modeling -->
+                    <div class="absolute top-1/2 left-[38%] transform -translate-y-1/2">
+                        <div class="flag group" onclick="toggleContent(3, 'flagClickSound')">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/475350e4-67ee-40c7-bbaf-99430ceb9a9a.png" 
+                                 alt="Green pirate flag with telescope and navigation tools for Modeling step" 
+                                 class="w-20 h-28 mx-auto mb-3" />
+                            <span class="text-white text-sm font-semibold bg-black bg-opacity-60 px-3 py-2 rounded-lg">3. Modeling</span>
+                        </div>
+                    </div>
+
+                    <!-- Flag 4 - Evaluation -->
+                    <div class="absolute top-1/2 left-[53%] transform -translate-y-1/2">
+                        <div class="flag group" onclick="toggleContent(4, 'flagClickSound')">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/1bef3364-5eb0-457b-9ebb-f04a48627173.png" 
+                                 alt="Purple pirate flag with spyglass and treasure map for Evaluation step" 
+                                 class="w-20 h-28 mx-auto mb-3" />
+                            <span class="text-white text-sm font-semibold bg-black bg-opacity-60 px-3 py-2 rounded-lg">4. Evaluation</span>
+                        </div>
+                    </div>
+
+                    <!-- Flag 5 - Optimization -->
+                    <div class="absolute top-1/2 left-[68%] transform -translate-y-1/2">
+                        <div class="flag group" onclick="toggleContent(5, 'flagClickSound')">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/7ca73f55-d02c-46d7-a067-bba0ca35ca46.png" 
+                                 alt="Orange pirate flag with crossed swords and treasure chest for Optimization step" 
+                                 class="w-20 h-28 mx-auto mb-3" />
+                            <span class="text-white text-sm font-semibold bg-black bg-opacity-60 px-3 py-2 rounded-lg">5. Optimization</span>
+                        </div>
+                    </div>
+
+                    <!-- Flag 6 - Deployment -->
+                    <div class="absolute top-1/2 left-[83%] transform -translate-y-1/2">
+                        <div class="flag group" onclick="toggleContent(6, 'flagClickSound')">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4824d309-695a-4753-99f1-b1c9a27905ec.png" 
+                                 alt="Golden pirate flag with ship wheel and treasure for Deployment step" 
+                                 class="w-20 h-28 mx-auto mb-3" />
+                            <span class="text-white text-sm font-semibold bg-black bg-opacity-60 px-3 py-2 rounded-lg">6. Deployment</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="mt-16 space-y-6">
+                    <!-- Data Understanding Content -->
+                    <div id="content-1" class="content-card rounded-xl p-8">
+                        <h3 class="text-3xl font-bold text-yellow-400 mb-6">🏴‍☠️ Step 1: Data Discovery & Understanding</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Core Objectives:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Comprehensive data exploration and pattern recognition</li>
+                                    <li>Statistical analysis and distribution profiling</li>
+                                    <li>Correlation analysis and feature relationships</li>
+                                    <li>Data quality assessment and anomaly detection</li>
+                                    <li>Domain knowledge integration and hypothesis formation</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Technical Approach:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Automated EDA frameworks and visualization libraries</li>
+                                    <li>Statistical testing and significance validation</li>
+                                    <li>Dimensionality reduction techniques (PCA, UMAP, t-SNE)</li>
+                                    <li>Data profiling and quality metrics implementation</li>
+                                    <li>Interactive visualization dashboards and reports</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Preparation Content -->
+                    <div id="content-2" class="content-card rounded-xl p-8">
+                        <h3 class="text-3xl font-bold text-yellow-400 mb-6">🏴‍☠️ Step 2: Data Preparation & Engineering</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Data Processing:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Data cleaning and missing value treatment strategies</li>
+                                    <li>Feature engineering and transformation pipelines</li>
+                                    <li>Handling categorical variables and encoding techniques</li>
+                                    <li>Outlier detection and treatment methodologies</li>
+                                    <li>Data normalization and standardization approaches</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Advanced Techniques:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Automated feature selection and importance ranking</li>
+                                    <li>Time-series feature engineering and lag variables</li>
+                                    <li>Text preprocessing and NLP feature extraction</li>
+                                    <li>Image data augmentation and preprocessing</li>
+                                    <li>Data versioning and pipeline reproducibility</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modeling Content -->
+                    <div id="content-3" class="content-card rounded-xl p-8">
+                        <h3 class="text-3xl font-bold text-yellow-400 mb-6">🏴‍☠️ Step 3: Model Development & Training</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Algorithm Selection:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Traditional machine learning algorithms comparison</li>
+                                    <li>Deep learning architectures and neural networks</li>
+                                    <li>Ensemble methods and model stacking techniques</li>
+                                    <li>Problem-specific algorithm recommendations</li>
+                                    <li>Transfer learning and pre-trained models</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Training Strategy:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Cross-validation and dataset splitting strategies</li>
+                                    <li>Regularization techniques and overfitting prevention</li>
+                                    <li>Early stopping and convergence monitoring</li>
+                                    <li>Distributed training and computational optimization</li>
+                                    <li>Model interpretability and explainability integration</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Content -->
+                    <div id="content-4" class="content-card rounded-xl p-8">
+                        <h3 class="text-3xl font-bold text-yellow-400 mb-6">🏴‍☠️ Step 4: Model Evaluation & Validation</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Performance Metrics:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Comprehensive evaluation metrics suite implementation</li>
+                                    <li>Business-specific metric customization and alignment</li>
+                                    <li>Statistical significance testing and confidence intervals</li>
+                                    <li>Error analysis and misclassification patterns</li>
+                                    <li>Model calibration and reliability assessment</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Validation Framework:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Stratified and time-series cross-validation techniques</li>
+                                    <li>Holdout validation and test set strategies</li>
+                                    <li>Model comparison and statistical testing frameworks</li>
+                                    <li>Production environment simulation testing</li>
+                                    <li>Robustness and stability analysis</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optimization Content -->
+                    <div id="content-5" class="content-card rounded-xl p-8">
+                        <h3 class="text-3xl font-bold text-yellow-400 mb-6">🏴‍☠️ Step 5: Model Optimization & Refinement</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Hyperparameter Tuning:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Bayesian optimization and Gaussian process regression</li>
+                                    <li>Evolutionary algorithms and genetic optimization</li>
+                                    <li>Grid search and random search methodologies</li>
+                                    <li>Multi-objective optimization and Pareto front analysis</li>
+                                    <li>Automated hyperparameter optimization frameworks</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Model Refinement:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Feature importance analysis and selection refinement</li>
+                                    <li>Model ensemble and stacking optimization</li>
+                                    <li>Architecture search and neural network optimization</li>
+                                    <li>Computational efficiency and inference optimization</li>
+                                    <li>Continuous integration of new data and concepts</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deployment Content -->
+                    <div id="content-6" class="content-card rounded-xl p-8">
+                        <h3 class="text-3xl font-bold text-yellow-400 mb-6">🏴‍☠️ Step 6: Deployment & Productionization</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Deployment Strategies:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Model serialization and version control systems</li>
+                                    <li>Containerization and microservices architecture</li>
+                                    <li>REST API development and integration frameworks</li>
+                                    <li>Cloud platform deployment and scalability planning</li>
+                                    <li>Continuous integration and deployment pipelines</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-white mb-4">Production Management:</h4>
+                                <ul class="list-disc list-inside text-gray-200 space-y-3">
+                                    <li>Model monitoring and performance tracking</li>
+                                    <li>A/B testing and progressive rollout strategies</li>
+                                    <li>Data drift and concept drift detection</li>
+                                    <li>Model retraining and maintenance workflows</li>
+                                    <li>Security, compliance, and governance frameworks</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-16 text-gray-400">
+            <p class="text-lg mb-2">Built for machine learning professionals and researchers</p>
+            <p class="text-sm">Interactive Pirate Map Roadmap - Comprehensive ML Project Lifecycle</p>
+        </div>
+    </div>
+
+    <script>
+        let soundEnabled = true;
+        
+        // Play sound function
+        function playSound(soundId) {
+            if (soundEnabled) {
+                const sound = document.getElementById(soundId);
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log('Sound play prevented:', e));
+            }
+        }
+        
+        // Toggle sound function
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const button = document.getElementById('soundToggle');
+            button.textContent = soundEnabled ? '🔈 Enabled' : '🔇 Disabled';
+            button.classList.toggle('bg-gray-600');
+            button.classList.toggle('bg-green-600');
+            
+            // Play toggle sound
+            if (soundEnabled) {
+                playSound('pageLoadSound');
+            }
+        }
+        
+        function toggleContent(stepNumber, soundId) {
+            playSound(soundId);
+            playSound('contentOpenSound');
+            
+            // Toggle content visibility
+            const content = document.getElementById(`content-${stepNumber}`);
+            const isActivating = !content.classList.contains('active');
+            content.classList.toggle('active');
+            
+            // Toggle flag active state
+            const flags = document.querySelectorAll('.flag');
+            flags.forEach((flag, index) => {
+                if (index + 1 === stepNumber) {
+                    flag.classList.toggle('active');
+                } else {
+                    flag.classList.remove('active');
+                }
+            });
+            
+            // Close other content panels if opening a new one
+            if (isActivating) {
+                document.querySelectorAll('.content-card').forEach((card, index) => {
+                    if (index + 1 !== stepNumber && card.classList.contains('active')) {
+                        card.classList.remove('active');
+                    }
+                });
+            }
+        }
+        
+        // Initialize page with sound and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Play initial sound
+            setTimeout(() => playSound('pageLoadSound'), 500);
+            
+            // Setup sound toggle
+            document.getElementById('soundToggle').addEventListener('click', toggleSound);
+            
+            // Add hover effects to flags
+            const flags = document.querySelectorAll('.flag');
+            
+            flags.forEach((flag) => {
+                flag.addEventListener('mouseenter', () => {
+                    flag.style.transform = 'translateY(-8px) scale(1.08)';
+                });
+                
+                flag.addEventListener('mouseleave', () => {
+                    if (!flag.classList.contains('active')) {
+                        flag.style.transform = '';
+                    }
+                });
+            });
+            
+            // Add keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key >= '1' && e.key <= '6') {
+                    toggleContent(parseInt(e.key), 'flagClickSound');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
